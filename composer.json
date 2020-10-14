@@ -1,24 +1,24 @@
 {
-    "name": "laravel-enso/charts",
+    "name": "genealogiawebsite/charts",
     "description": "Server-side data builder for Chart.js, with a VueJS component for the frontend.",
     "keywords": [
-        "laravel-enso",
+        "genealogiawebsite",
         "charts",
         "laravel",
         "chartjs"
     ],
-    "homepage": "https://github.com/laravel-enso/charts",
+    "homepage": "https://github.com/genealogiawebsite/charts",
     "type": "library",
     "license": "MIT",
     "authors": [{
         "name": "Adrian Ocneanu",
         "email": "aocneanu@gmail.com",
-        "homepage": "https://laravel-enso.com",
+        "homepage": "https://genealogiawebsite.com",
         "role": "Developer"
     }],
     "require": {
         "laravel/framework": "^7.0|^8.0",
-        "laravel-enso/helpers": "^2.0",
+        "genealogiawebsite/helpers": "^2.0",
         "php": ">=7.4.0"
     },
     "autoload": {

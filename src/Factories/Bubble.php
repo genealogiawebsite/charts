@@ -5,9 +5,13 @@ namespace LaravelEnso\Charts\Factories;
 use Illuminate\Support\Collection;
 use LaravelEnso\Charts\Enums\Charts;
 use LaravelEnso\Helpers\Services\Decimals;
+use LaravelEnso\Helpers\Traits\When;
 
 class Bubble extends Chart
 {
+    use When;
+
+    private bool $autoRadius;
     private int $radiusLimit;
     private int $maxRadius;
 
@@ -15,14 +19,14 @@ class Bubble extends Chart
     {
         parent::__construct();
 
+        $this->autoRadius = true;
         $this->radiusLimit = 25;
 
         $this->type(Charts::Bubble)
-            ->ratio(1.6)
-            ->scales();
+            ->ratio(1.6);
     }
 
-    public function response()
+    public function response(): array
     {
         return [
             'data' => ['datasets' => $this->data],
@@ -32,15 +36,23 @@ class Bubble extends Chart
         ];
     }
 
-    protected function build()
+    public function disableAutoRadius(): self
     {
-        $this->maxRadius()
-            ->computeRadius()
+        $this->autoRadius = false;
+
+        return $this;
+    }
+
+    protected function build(): void
+    {
+        $this->when($this->autoRadius, fn ($chart) => $chart
+            ->maxRadius()
+            ->computeRadius())
             ->mapDatasetsLabels()
             ->data();
     }
 
-    private function maxRadius()
+    private function maxRadius(): self
     {
         $this->maxRadius = (new Collection($this->datasets))
             ->map(fn ($dataset) => max(array_column($dataset, 2)))
@@ -49,17 +61,17 @@ class Bubble extends Chart
         return $this;
     }
 
-    private function computeRadius()
+    private function computeRadius(): self
     {
         $this->datasets = (new Collection($this->datasets))
             ->map(fn ($dataset) => (new Collection($dataset))
-                ->map(fn ($bubble) => $this->bubbleRadius($bubble))
-            )->toArray();
+                ->map(fn ($bubble) => $this->bubbleRadius($bubble)))
+            ->toArray();
 
         return $this;
     }
 
-    private function bubbleRadius(array $bubble)
+    private function bubbleRadius(array $bubble): array
     {
         $bubble[2] = Decimals::ceil(
             Decimals::div($this->radiusLimit * $bubble[2], $this->maxRadius)
@@ -68,7 +80,7 @@ class Bubble extends Chart
         return $bubble;
     }
 
-    private function mapDatasetsLabels()
+    private function mapDatasetsLabels(): self
     {
         $this->datasets = array_combine(
             array_values($this->labels),
@@ -78,7 +90,7 @@ class Bubble extends Chart
         return $this;
     }
 
-    private function data()
+    private function data(): void
     {
         (new Collection($this->datasets))
             ->each(fn ($dataset, $label) => $this->data[] = [
@@ -87,13 +99,13 @@ class Bubble extends Chart
                 'backgroundColor' => $this->hex2rgba($this->color()),
                 'hoverBackgroundColor' => $this->hex2rgba($this->color(), 0.6),
                 'data' => $this->dataset($dataset),
-                'datalabels' => [
+                'datalabels' => empty($this->datalabels) ? [
                     'backgroundColor' => $this->color(),
-                ],
+                ] : $this->datalabels,
             ]);
     }
 
-    private function dataset($dataset)
+    private function dataset($dataset): Collection
     {
         return (new Collection($dataset))
             ->map(fn ($values) => [
